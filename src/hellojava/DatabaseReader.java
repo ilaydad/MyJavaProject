@@ -12,7 +12,7 @@ public class DatabaseReader {
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("please enter a .properties file name.");
+            System.out.println(“please enter a .properties file name.");
             return;
         }
 
@@ -22,12 +22,16 @@ public class DatabaseReader {
         HikariDataSource dataSource = createDataSource(props);
         if (dataSource == null) return;
 
+        // inserting a new student record
+        insertStudent(dataSource, “Zehra", 20);
+
+        // reading and displaying all students
         readStudents(dataSource);
 
-        dataSource.close(); 
+        dataSource.close(); // closing the datasource
     }
 
-    // loads database settings from .properties file
+    // loads database settings from a properties file
     private static Properties loadProperties(String fileName) {
         Properties props = new Properties();
         try (InputStream input = DatabaseReader.class.getClassLoader().getResourceAsStream(fileName)) {
@@ -43,7 +47,7 @@ public class DatabaseReader {
         }
     }
 
-    // creates database connection pool using HikariCP
+    // creates a HikariCP connection pool
     private static HikariDataSource createDataSource(Properties props) {
         try {
             HikariConfig config = new HikariConfig();
@@ -51,6 +55,7 @@ public class DatabaseReader {
             config.setUsername(props.getProperty("username"));
             config.setPassword(props.getProperty("password"));
             config.setDriverClassName(props.getProperty("driverClassName"));
+
             return new HikariDataSource(config);
         } catch (Exception e) {
             System.out.println("Failed to create DataSource: " + e.getMessage());
@@ -58,15 +63,12 @@ public class DatabaseReader {
         }
     }
 
-    // it retrieves the data from the students table and prints it to the screen.
+    // reads all students from the database and prints them
     private static void readStudents(HikariDataSource dataSource) {
-        String query = "SELECT * FROM students";
-
-        // using try-with-resources automatically closes Connection, Statement and ResultSet
         try (
             Connection conn = dataSource.getConnection();
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(query)
+            ResultSet rs = stmt.executeQuery("SELECT * FROM students")
         ) {
             while (rs.next()) {
                 System.out.println("ID: " + rs.getInt("id") +
@@ -75,6 +77,29 @@ public class DatabaseReader {
             }
         } catch (SQLException e) {
             System.out.println("SQL error: " + e.getMessage());
+        }
+    }
+
+    // inserts a new student record into the database
+    private static void insertStudent(HikariDataSource dataSource, String name, int age) {
+        String sql = "INSERT INTO students (name, age) VALUES (?, ?)";
+
+        try (
+            Connection conn = dataSource.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)
+        ) {
+            pstmt.setString(1, name);
+            pstmt.setInt(2, age);
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                System.out.println("student inserted successfully.");
+            } else {
+                System.out.println(“failed to insert student.");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("SQL error during insert: " + e.getMessage());
         }
     }
 }
