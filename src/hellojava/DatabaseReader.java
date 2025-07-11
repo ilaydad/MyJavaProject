@@ -2,6 +2,9 @@ package hellojava;
 
 import java.sql.*;
 import java.util.Properties;
+import java.util.logging.Logger;
+import java.util.logging.FileHandler;
+import java.util.logging.SimpleFormatter;
 import java.io.InputStream;
 import java.io.IOException;
 
@@ -10,9 +13,18 @@ import com.zaxxer.hikari.HikariDataSource;
 
 public class DatabaseReader {
 
+    private static final Logger logger = Logger.getLogger(DatabaseReader.class.getName());
+
     public static void main(String[] args) {
+        try {
+            setupLogger();
+        } catch (IOException e) {
+            System.out.println("Logger setup failed: " + e.getMessage());
+        }
+
         if (args.length < 1) {
-            System.out.println("please enter a .properties file name.");
+            logger.warning("Properties file not specified.");
+            System.out.println("Please enter a .properties file name.");
             return;
         }
 
@@ -23,12 +35,21 @@ public class DatabaseReader {
         if (dataSource == null) return;
 
         // inserting a new student record
-        insertStudent(dataSource, "Zehra", 20);
+        insertStudent(dataSource, "Ceyda", 21);
 
         // reading and displaying all students
         readStudents(dataSource);
 
-        dataSource.close(); // closing the datasource
+        dataSource.close();
+        logger.info("DataSource closed successfully.");
+    }
+
+    // sets up the logger to write to a file
+    private static void setupLogger() throws IOException {
+        FileHandler fileHandler = new FileHandler("application.log", true);
+        fileHandler.setFormatter(new SimpleFormatter());
+        logger.addHandler(fileHandler);
+        logger.setUseParentHandlers(false); // log only to file, not console
     }
 
     // loads database settings from a properties file
@@ -36,13 +57,14 @@ public class DatabaseReader {
         Properties props = new Properties();
         try (InputStream input = DatabaseReader.class.getClassLoader().getResourceAsStream(fileName)) {
             if (input == null) {
-                System.out.println(fileName + " file does not exist.");
+                logger.severe(fileName + " file not found.");
                 return null;
             }
             props.load(input);
+            logger.info("Properties file loaded successfully.");
             return props;
         } catch (IOException e) {
-            System.out.println("IO error: " + e.getMessage());
+            logger.severe("Error loading properties: " + e.getMessage());
             return null;
         }
     }
@@ -56,34 +78,36 @@ public class DatabaseReader {
             config.setPassword(props.getProperty("password"));
             config.setDriverClassName(props.getProperty("driverClassName"));
 
+            logger.info("HikariCP connection pool created.");
             return new HikariDataSource(config);
         } catch (Exception e) {
-            System.out.println("Failed to create DataSource: " + e.getMessage());
+            logger.severe("Failed to create connection pool: " + e.getMessage());
             return null;
         }
     }
 
-    // reads all students from the database and prints them
+    // reads and prints all students from the database
     private static void readStudents(HikariDataSource dataSource) {
+        String query = "SELECT * FROM students";
         try (
             Connection conn = dataSource.getConnection();
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM students")
+            ResultSet rs = stmt.executeQuery(query)
         ) {
             while (rs.next()) {
                 System.out.println("ID: " + rs.getInt("id") +
                                    ", Name: " + rs.getString("name") +
                                    ", Age: " + rs.getInt("age"));
             }
+            logger.info("Student records read successfully.");
         } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
+            logger.severe("SQL error in readStudents(): " + e.getMessage());
         }
     }
 
     // inserts a new student record into the database
     private static void insertStudent(HikariDataSource dataSource, String name, int age) {
         String sql = "INSERT INTO students (name, age) VALUES (?, ?)";
-
         try (
             Connection conn = dataSource.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql)
@@ -93,13 +117,13 @@ public class DatabaseReader {
             int affectedRows = pstmt.executeUpdate();
 
             if (affectedRows > 0) {
-                System.out.println("student inserted successfully.");
+                logger.info("New student inserted: " + name);
             } else {
-                System.out.println("failed to insert student.");
+                logger.warning("No rows affected, student not inserted.");
             }
 
         } catch (SQLException e) {
-            System.out.println("SQL error during insert: " + e.getMessage());
+            logger.severe("SQL error in insertStudent(): " + e.getMessage());
         }
     }
 }
