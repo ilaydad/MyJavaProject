@@ -5,33 +5,53 @@ import java.util.Properties;
 import java.io.InputStream;
 import java.io.IOException;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 public class DatabaseReader {
     public static void main(String[] args) {
-        String url = "jdbc:mysql://localhost:3306/stajdb";
-        String user = "root";
-        String password = "";
+        Properties props = new Properties();
 
         try {
-            Connection conn = DriverManager.getConnection(url, user, password);
-            Statement stmt = conn.createStatement();
+            if (args.length < 1) {
+                System.out.println("Please enter a .properties file name.");
+                return;
+            }
 
-            String sql = "SELECT * FROM students";
-            ResultSet rs = stmt.executeQuery(sql);
+            InputStream input = DatabaseReader.class.getClassLoader().getResourceAsStream(args[0]);
+            if (input == null) {
+                System.out.println(args[0] + " file does not exist.");
+                return;
+            }
+
+            props.load(input);
+
+            // Hikari config
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(props.getProperty("jdbcUrl"));
+            config.setUsername(props.getProperty("username"));
+            config.setPassword(props.getProperty("password"));
+            config.setDriverClassName(props.getProperty("driverClassName"));
+
+            HikariDataSource dataSource = new HikariDataSource(config);
+
+            Connection conn = dataSource.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM students");
 
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                int age = rs.getInt("age");
-
-                System.out.println("ID: " + id + ", Name: " + name + ", Age: " + age);
+                System.out.println("ID: " + rs.getInt("id") +
+                                   ", Name: " + rs.getString("name") +
+                                   ", Age: " + rs.getInt("age"));
             }
 
             rs.close();
             stmt.close();
             conn.close();
+            dataSource.close();
 
-        } catch (SQLException e) {
-            System.out.println("Connection error: " + e.getMessage());
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
         }
     }
 } 
