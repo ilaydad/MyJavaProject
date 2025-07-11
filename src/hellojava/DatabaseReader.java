@@ -24,7 +24,7 @@ public class DatabaseReader {
 
         readStudents(dataSource);
 
-        dataSource.close(); // DataSource kapatılıyor
+        dataSource.close(); 
     }
 
     // loads database settings from .properties file
