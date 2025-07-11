@@ -24,9 +24,10 @@ public class DatabaseReader {
 
         readStudents(dataSource);
 
-        dataSource.close();
+        dataSource.close(); // DataSource kapatılıyor
     }
 
+    // loads database settings from .properties file
     private static Properties loadProperties(String fileName) {
         Properties props = new Properties();
         try (InputStream input = DatabaseReader.class.getClassLoader().getResourceAsStream(fileName)) {
@@ -42,6 +43,7 @@ public class DatabaseReader {
         }
     }
 
+    // creates database connection pool using HikariCP
     private static HikariDataSource createDataSource(Properties props) {
         try {
             HikariConfig config = new HikariConfig();
@@ -49,7 +51,6 @@ public class DatabaseReader {
             config.setUsername(props.getProperty("username"));
             config.setPassword(props.getProperty("password"));
             config.setDriverClassName(props.getProperty("driverClassName"));
-
             return new HikariDataSource(config);
         } catch (Exception e) {
             System.out.println("Failed to create DataSource: " + e.getMessage());
@@ -57,11 +58,15 @@ public class DatabaseReader {
         }
     }
 
+    // it retrieves the data from the students table and prints it to the screen.
     private static void readStudents(HikariDataSource dataSource) {
+        String query = "SELECT * FROM students";
+
+        // using try-with-resources automatically closes Connection, Statement and ResultSet
         try (
             Connection conn = dataSource.getConnection();
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM students")
+            ResultSet rs = stmt.executeQuery(query)
         ) {
             while (rs.next()) {
                 System.out.println("ID: " + rs.getInt("id") +
