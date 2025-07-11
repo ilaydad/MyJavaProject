@@ -12,7 +12,7 @@ public class DatabaseReader {
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println(“please enter a .properties file name.");
+            System.out.println("please enter a .properties file name.");
             return;
         }
 
@@ -23,7 +23,7 @@ public class DatabaseReader {
         if (dataSource == null) return;
 
         // inserting a new student record
-        insertStudent(dataSource, “Zehra", 20);
+        insertStudent(dataSource, "Zehra", 20);
 
         // reading and displaying all students
         readStudents(dataSource);
@@ -95,7 +95,7 @@ public class DatabaseReader {
             if (affectedRows > 0) {
                 System.out.println("student inserted successfully.");
             } else {
-                System.out.println(“failed to insert student.");
+                System.out.println("failed to insert student.");
             }
 
         } catch (SQLException e) {
