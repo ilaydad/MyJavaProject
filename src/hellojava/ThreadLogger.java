@@ -13,7 +13,7 @@ public class ThreadLogger implements Runnable  {
 	    @Override
 	    public void run() {
 	        logger.info("Thread is working — log entry written by a separate thread.");
-	        System.out.println("thread is running and writing to log file.");
+	        System.out.println("Thread is running and writing to log file.");
 	    }
 	}
 
