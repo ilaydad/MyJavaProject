@@ -2,29 +2,23 @@ package hellojava;
 
 import java.sql.*;
 import java.util.Properties;
-import java.util.logging.Logger;
-import java.util.logging.FileHandler;
-import java.util.logging.SimpleFormatter;
 import java.io.InputStream;
 import java.io.IOException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class DatabaseReader {
 
-    private static final Logger logger = Logger.getLogger(DatabaseReader.class.getName());
+    private static final Logger logger = LogManager.getLogger(DatabaseReader.class);
 
     public static void main(String[] args) {
-        try {
-            setupLogger();
-        } catch (IOException e) {
-            System.out.println("Logger setup failed: " + e.getMessage());
-        }
-
-        if (args.length < 1) {
-            logger.warning("Properties file not specified.");
-            System.out.println("Please enter a .properties file name.");
+     if (args.length < 1) {
+            logger.warn("properties file not specified.");
+            System.out.println("please enter a .properties file name.");
             return;
         }
 
@@ -36,40 +30,34 @@ public class DatabaseReader {
 
         // inserting a new student record
         insertStudent(dataSource, "Ceyda", 21);
-
+       
         // reading and displaying all students
         readStudents(dataSource);
+        for (int i = 0; i < 500; i++) {
+        	logger.error("Test log entry number " + i + " — something went wrong, or maybe not!");
+}
 
         dataSource.close();
         logger.info("DataSource closed successfully.");
     }
-
-    // sets up the logger to write to a file
-    private static void setupLogger() throws IOException {
-        FileHandler fileHandler = new FileHandler("application.log", true);
-        fileHandler.setFormatter(new SimpleFormatter());
-        logger.addHandler(fileHandler);
-        logger.setUseParentHandlers(false); // log only to file, not console
-    }
-
-    // loads database settings from a properties file
+    
     private static Properties loadProperties(String fileName) {
         Properties props = new Properties();
         try (InputStream input = DatabaseReader.class.getClassLoader().getResourceAsStream(fileName)) {
             if (input == null) {
-                logger.severe(fileName + " file not found.");
+                logger.error(fileName + " file not found.");
                 return null;
             }
             props.load(input);
             logger.info("Properties file loaded successfully.");
             return props;
         } catch (IOException e) {
-            logger.severe("Error loading properties: " + e.getMessage());
+            logger.error("Error loading properties: ", e);
             return null;
         }
     }
 
-    // creates a HikariCP connection pool
+   // creates a HikariCP connection pool
     private static HikariDataSource createDataSource(Properties props) {
         try {
             HikariConfig config = new HikariConfig();
@@ -81,7 +69,7 @@ public class DatabaseReader {
             logger.info("HikariCP connection pool created.");
             return new HikariDataSource(config);
         } catch (Exception e) {
-            logger.severe("Failed to create connection pool: " + e.getMessage());
+            logger.error("Failed to create connection pool: " + e.getMessage());
             return null;
         }
     }
@@ -101,7 +89,7 @@ public class DatabaseReader {
             }
             logger.info("Student records read successfully.");
         } catch (SQLException e) {
-            logger.severe("SQL error in readStudents(): " + e.getMessage());
+            logger.error("SQL error in readStudents(): " + e.getMessage());
         }
     }
 
@@ -119,11 +107,11 @@ public class DatabaseReader {
             if (affectedRows > 0) {
                 logger.info("New student inserted: " + name);
             } else {
-                logger.warning("No rows affected, student not inserted.");
+                logger.warn("No rows affected, student not inserted.");
             }
 
         } catch (SQLException e) {
-            logger.severe("SQL error in insertStudent(): " + e.getMessage());
+            logger.error("SQL error in insertStudent(): " + e.getMessage());
         }
     }
 }
