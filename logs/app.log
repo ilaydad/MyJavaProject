@@ -1,0 +1,10 @@
+2025-07-14 10:44:08 [main] INFO  hellojava.DatabaseReader - Properties file loaded successfully.
+2025-07-14 10:44:08 [main] INFO  hellojava.DatabaseReader - HikariCP connection pool created.
+2025-07-14 10:44:08 [main] ERROR hellojava.DatabaseReader - SQL error in insertStudent(): Duplicate entry 'Ceyda' for key 'students.name_UNIQUE'
+2025-07-14 10:44:08 [main] INFO  hellojava.DatabaseReader - Student records read successfully.
+2025-07-14 10:44:08 [main] INFO  hellojava.DatabaseReader - DataSource closed successfully.
+2025-07-14 10:57:37 [main] INFO  hellojava.DatabaseReader - Properties file loaded successfully.
+2025-07-14 10:57:37 [main] INFO  hellojava.DatabaseReader - HikariCP connection pool created.
+2025-07-14 10:57:38 [main] ERROR hellojava.DatabaseReader - SQL error in insertStudent(): Duplicate entry 'Ceyda' for key 'students.name_UNIQUE'
+2025-07-14 10:57:38 [main] INFO  hellojava.DatabaseReader - Student records read successfully.
+2025-07-14 10:57:38 [main] INFO  hellojava.DatabaseReader - DataSource closed successfully.
