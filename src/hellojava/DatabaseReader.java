@@ -28,10 +28,10 @@ public class DatabaseReader {
         HikariDataSource dataSource = createDataSource(props);
         if (dataSource == null) return;
 
-        // Sadece bir kez eklenmemişse ekle
+        
         insertStudentIfNotExists(dataSource, "İlayda", 22);
 
-        // Kayıtları oku ve yazdır
+     
         readStudents(dataSource);
 
         dataSource.close();
@@ -59,7 +59,7 @@ public class DatabaseReader {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(props.getProperty("jdbcUrl"));
             config.setUsername(props.getProperty("username"));
-            config.setPassword(props.getProperty("password", "")); // boş şifre desteği
+            config.setPassword(props.getProperty("password", ""));
             config.setDriverClassName(props.getProperty("driverClassName"));
             logger.info("HikariCP connection pool created.");
             return new HikariDataSource(config);
