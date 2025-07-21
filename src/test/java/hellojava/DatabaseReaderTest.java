@@ -23,7 +23,7 @@ public class DatabaseReaderTest {
 
     @Test
     void testCreateDataSourceWithMissingProps() {
-        Properties props = new Properties(); // eksik bilgilerle
+        Properties props = new Properties(); 
         HikariDataSource ds = DatabaseReader.createDataSource(props);
         assertNull(ds, "DataSource should be null when required properties are missing.");
     }
